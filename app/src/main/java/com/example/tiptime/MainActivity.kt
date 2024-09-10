@@ -50,6 +50,9 @@ fun TipTimeLayout() {
     Surface(
         modifier = Modifier.fillMaxSize(),
     ) {
+        // create variables to hoist the variables
+        // up to TipTimeLayout. now, other functions
+        // can use these variables
         var amountInput by remember { mutableStateOf("") }
 
         val amount = amountInput.toDoubleOrNull() ?: 0.0
