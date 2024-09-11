@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -53,31 +55,86 @@ fun TipTimeLayout() {
         // create variables to hoist the variables
         // up to TipTimeLayout. now, other functions
         // can use these variables
+
+        // use the "remember" operator to use recomposition
+        // every time the variables change
         var amountInput by remember { mutableStateOf("") }
+        var tipInput by remember { mutableStateOf("") }
 
+        // elvis operator used
+        // if value is null, returns 0.0
+        // if value is NOT null, then return the actual value
         val amount = amountInput.toDoubleOrNull() ?: 0.0
-        val tip = calculateTip(amount)
+        val tipPercent = tipInput.toDoubleOrNull() ?: 0.0
+        val tip = calculateTip(amount, tipPercent)
 
+        // create a column that will store multiple items
         Column(
+            // modifier tag to apply modifiers
             modifier = Modifier
                 .statusBarsPadding()
                 .padding(horizontal = 40.dp)
                 .safeDrawingPadding(),
+            // horizontalAlignment and verticalArrangement can be used
+            // together
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // create the first text item
             Text(
+                // text = "Calculate Tip"
                 text = stringResource(R.string.calculate_tip),
+                // modifiers for the text
                 modifier = Modifier
                     .padding(bottom = 16.dp, top = 40.dp)
                     .align(alignment = Alignment.Start)
             )
+            // create one number field for the bill amount
             EditNumberField(
+                // label is what is on the textarea
+                // before anyone types in there
+                // label = "Bill Amount"
+                label = R.string.bill_amount,
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                ),
+                // value is what amountInput is based on what
+                // it changes to
+                // amountInput is grabbed via the textarea
+                // and is changed
                 value = amountInput,
+                // onValueChange, amountInput will be set
+                // to "it", meaning the value in the textbox
                 onValueChange = { amountInput = it },
+                // modifiers for modifiers
                 modifier = Modifier
                 .padding(bottom = 32.dp)
-                .fillMaxWidth())
+                .fillMaxWidth()
+            )
+            // create a second number field for the tip percentage
+            EditNumberField(
+                // label is what is on the textarea
+                // before anyone types in there
+                // label = "Tip Percentage"
+                label = R.string.how_was_the_service,
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                // value is what tipAmount is based on what it changes to
+                // tipAmount is grabbed via the textarea and is changed
+                value = tipInput,
+                // onValueChange, tipAmount will be set
+                // to "it", meaning the value in the textbox
+                onValueChange = { tipInput = it },
+                // modifiers for modifiers
+                modifier = Modifier
+                    .padding(bottom = 32.dp)
+                    .fillMaxWidth()
+            )
+            // create a text area that prints out the result
+            // which is the tip amount
             Text(
                 text = stringResource(R.string.tip_amount, tip),
                 style = MaterialTheme.typography.displaySmall
@@ -87,17 +144,24 @@ fun TipTimeLayout() {
     }
 }
 
+
+// reusable number field for multiple items
 @Composable
 fun EditNumberField(
+    // label is the text in the textarea before
+    // anyone types in there
+    // it is labeled as a "StringRes", meaning String Resource
+    // it is represented by an Int
+    @StringRes label: Int,
+    keyboardOptions: KeyboardOptions,
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier)
 {
     TextField(
-        label = { Text(stringResource(R.string.bill_amount)) },
+        label = { Text(stringResource(label)) },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-
+        keyboardOptions = keyboardOptions,
         value = value,
         onValueChange = onValueChange,
         modifier = modifier
